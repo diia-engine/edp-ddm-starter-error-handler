@@ -18,6 +18,7 @@ package com.epam.digital.data.platform.starter.errorhandling;
 
 import com.epam.digital.data.platform.starter.errorhandling.dto.SystemErrorDto;
 import com.epam.digital.data.platform.starter.errorhandling.dto.ValidationErrorDto;
+import com.epam.digital.data.platform.starter.errorhandling.exception.ForbiddenOperationException;
 import com.epam.digital.data.platform.starter.errorhandling.exception.RestSystemException;
 import com.epam.digital.data.platform.starter.errorhandling.exception.SoapSystemException;
 import com.epam.digital.data.platform.starter.errorhandling.exception.ValidationException;
@@ -45,6 +46,17 @@ public class BaseRestExceptionHandler extends ResponseEntityExceptionHandler {
         .code(String.valueOf(HttpStatus.FORBIDDEN.value()))
         .message(BaseRestExceptionHandler.ACCESS_IS_DENIED)
         .build();
+    log.warn(BaseRestExceptionHandler.ACCESS_IS_DENIED, ex);
+    return new ResponseEntity<>(error, HttpStatus.FORBIDDEN);
+  }
+
+  @ExceptionHandler(ForbiddenOperationException.class)
+  public ResponseEntity<SystemErrorDto> handleForbiddenOperationException(ForbiddenOperationException ex) {
+    var error = SystemErrorDto.builder()
+            .traceId(MDC.get(BaseRestExceptionHandler.TRACE_ID_KEY))
+            .code(String.valueOf(HttpStatus.FORBIDDEN.value()))
+            .message(BaseRestExceptionHandler.ACCESS_IS_DENIED)
+            .build();
     log.warn(BaseRestExceptionHandler.ACCESS_IS_DENIED, ex);
     return new ResponseEntity<>(error, HttpStatus.FORBIDDEN);
   }
