@@ -23,6 +23,7 @@ import com.epam.digital.data.platform.starter.errorhandling.dto.ErrorDetailDto;
 import com.epam.digital.data.platform.starter.errorhandling.dto.ErrorsListDto;
 import com.epam.digital.data.platform.starter.errorhandling.dto.SystemErrorDto;
 import com.epam.digital.data.platform.starter.errorhandling.dto.ValidationErrorDto;
+import com.epam.digital.data.platform.starter.errorhandling.exception.ConstraintViolationException;
 import com.epam.digital.data.platform.starter.errorhandling.exception.RestSystemException;
 import com.epam.digital.data.platform.starter.errorhandling.exception.SoapSystemException;
 import com.epam.digital.data.platform.starter.errorhandling.exception.ValidationException;
@@ -104,6 +105,18 @@ class BaseRestExceptionHandlerTest {
     var response = exceptionHandler.handleSoapSystemException(soapSystemException);
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
+    Assertions.assertThat(response.getBody()).isEqualTo(errorDto);
+  }
+
+  @Test
+  void handleConstraintViolationException() {
+    var errorDto = SystemErrorDto.builder().traceId("traceId")
+        .message("Constraint Violation").code("409").localizedMessage("Порушення одного з обмежень на рівні БД").build();
+    var constraintViolationException = new ConstraintViolationException(errorDto);
+
+    var response = exceptionHandler.handleConstraintViolationException(constraintViolationException);
+
+    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
     Assertions.assertThat(response.getBody()).isEqualTo(errorDto);
   }
 }

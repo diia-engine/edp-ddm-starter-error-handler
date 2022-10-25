@@ -18,6 +18,7 @@ package com.epam.digital.data.platform.starter.errorhandling;
 
 import com.epam.digital.data.platform.starter.errorhandling.dto.SystemErrorDto;
 import com.epam.digital.data.platform.starter.errorhandling.dto.ValidationErrorDto;
+import com.epam.digital.data.platform.starter.errorhandling.exception.ConstraintViolationException;
 import com.epam.digital.data.platform.starter.errorhandling.exception.ForbiddenOperationException;
 import com.epam.digital.data.platform.starter.errorhandling.exception.RestSystemException;
 import com.epam.digital.data.platform.starter.errorhandling.exception.SoapSystemException;
@@ -59,6 +60,18 @@ public class BaseRestExceptionHandler extends ResponseEntityExceptionHandler {
             .build();
     log.warn(BaseRestExceptionHandler.ACCESS_IS_DENIED, ex);
     return new ResponseEntity<>(error, HttpStatus.FORBIDDEN);
+  }
+
+  @ExceptionHandler(ConstraintViolationException.class)
+  public ResponseEntity<SystemErrorDto> handleConstraintViolationException(ConstraintViolationException ex) {
+    var error = SystemErrorDto.builder()
+        .traceId(MDC.get(BaseRestExceptionHandler.TRACE_ID_KEY))
+        .code(ex.getCode())
+        .message(ex.getMessage())
+        .localizedMessage(ex.getLocalizedMessage())
+        .build();
+    log.warn("Constraint violation error", ex);
+    return new ResponseEntity<>(error, HttpStatus.CONFLICT);
   }
 
   @ExceptionHandler(RuntimeException.class)
